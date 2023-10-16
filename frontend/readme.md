@@ -1,3 +1,7 @@
+# Самый первый локальный запуск
+
+npm ci - установит все необходимые пакеты. После этого можно локально запускать
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
