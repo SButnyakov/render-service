@@ -9,7 +9,7 @@ type OrderRepository struct {
 	pg *postgres.PGStorage
 }
 
-func NewOrderStorage(pg *postgres.PGStorage) *OrderRepository {
+func NewOrderRepository(pg *postgres.PGStorage) *OrderRepository {
 	return &OrderRepository{pg: pg}
 }
 

@@ -6,6 +6,7 @@ import (
 	"backend-api/internal/lib/logger/sl"
 	"backend-api/internal/storage"
 	"errors"
+	"fmt"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
@@ -43,28 +44,28 @@ func New(log *slog.Logger, userProvider UserProvider, m *tokenManager.Manager) h
 		err := render.DecodeJSON(r.Body, &req)
 		if errors.Is(err, io.EOF) {
 			log.Error("request body is empty")
-			render.JSON(w, r, resp.Error("empty request"))
+			responseError(w, r, resp.Error("empty request"))
 			return
 		}
 		if err != nil {
 			log.Error("failed to decode request body", sl.Err(err))
-			render.JSON(w, r, resp.Error("failed to decode request"))
+			responseError(w, r, resp.Error("failed to decode request"))
 			return
 		}
 
 		if err = validator.New().Struct(req); err != nil {
 			validateErr := err.(validator.ValidationErrors)
 			log.Error("invalid request", sl.Err(err))
-			render.JSON(w, r, resp.ValidationError(validateErr))
+			responseError(w, r, resp.ValidationError(validateErr))
 		}
 
 		id, err := userProvider.CheckCredentials(req.LoginOrEmail, req.Password)
 		if errors.Is(err, storage.ErrInvalidCredentials) {
-			render.JSON(w, r, resp.Error("invalid credentials"))
+			responseError(w, r, resp.Error("invalid credentials"))
 			return
 		}
 		if err != nil {
-			render.JSON(w, r, resp.Error("server-side authorization failed"))
+			responseError(w, r, resp.Error("server-side authorization failed"))
 			return
 		}
 
@@ -72,16 +73,23 @@ func New(log *slog.Logger, userProvider UserProvider, m *tokenManager.Manager) h
 
 		token, err := m.NewJWT(id, time.Hour*72)
 		if err != nil {
-			render.JSON(w, r, resp.Error("failed to create jwt token"))
+			responseError(w, r, resp.Error("failed to create jwt token"))
+			return
 		}
 
 		responseOK(w, r, token)
 	}
 }
 
+func responseError(w http.ResponseWriter, r *http.Request, response resp.Response) {
+	w.WriteHeader(http.StatusBadRequest)
+	render.JSON(w, r, response)
+}
+
 func responseOK(w http.ResponseWriter, r *http.Request, token string) {
+	r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	w.WriteHeader(http.StatusOK)
 	render.JSON(w, r, Response{
 		Response: resp.OK(),
-		Token:    token,
 	})
 }

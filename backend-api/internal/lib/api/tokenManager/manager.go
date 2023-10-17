@@ -29,3 +29,7 @@ func (m *Manager) NewJWT(uid int64, duration time.Duration) (string, error) {
 
 	return token.SignedString([]byte(m.signingKey))
 }
+
+func (m *Manager) NewRefreshToken() (string, error) {
+	return "", nil
+}

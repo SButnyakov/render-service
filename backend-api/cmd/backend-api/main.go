@@ -6,6 +6,7 @@ import (
 	"backend-api/internal/lib/logger/sl"
 	"backend-api/internal/server/handlers/signin"
 	"backend-api/internal/server/handlers/signup"
+	"backend-api/internal/server/handlers/subscribe"
 	mwLogger "backend-api/internal/server/middleware/logger"
 	"backend-api/internal/storage/postgres"
 	"backend-api/internal/storage/postgres/repos"
@@ -38,11 +39,13 @@ func main() {
 	}
 	defer pg.Db.Close()
 
-	users := repos.NewUserStorage(pg)
-	order := repos.NewOrderStorage(pg)
-	_ = order
+	users := repos.NewUserRepository(pg)
+	orders := repos.NewOrderRepository(pg)
+	payments := repos.NewPaymentRepository(pg)
+	_ = orders
+	_ = payments
 
-	m, err := tokenManager.New("secret-key")
+	jwtManager, err := tokenManager.New("secret-key")
 	if err != nil {
 		log.Error("failed to initialie jwt manager", sl.Err(err))
 		os.Exit(-1)
@@ -56,7 +59,8 @@ func main() {
 	router.Use(middleware.URLFormat)
 
 	router.Post("/signup", signup.New(log, users))
-	router.Post("/signin", signin.New(log, users, m))
+	router.Post("/signin", signin.New(log, users, jwtManager))
+	router.Post("/subscribe", subscribe.New(log))
 
 	server := http.Server{
 		Addr:         cfg.Address,
@@ -69,6 +73,7 @@ func main() {
 	log.Info("starting server", slog.String("address", cfg.Address))
 	if err = server.ListenAndServe(); err != nil {
 		log.Error("failed to start server")
+		os.Exit(-1)
 	}
 }
 

@@ -7,25 +7,26 @@ import (
 	"errors"
 	"fmt"
 	"github.com/lib/pq"
+	"time"
 )
 
 type UserRepository struct {
 	pg *postgres.PGStorage
 }
 
-func NewUserStorage(pg *postgres.PGStorage) *UserRepository {
+func NewUserRepository(pg *postgres.PGStorage) *UserRepository {
 	return &UserRepository{pg: pg}
 }
 
 func (u *UserRepository) Create(user storage.User) error {
-	const fn = "storage.postgres.repos.users.Create"
+	const fn = "postgres.repos.users.Create"
 
-	stmt, err := u.pg.Db.Prepare("INSERT INTO users(login, email, password) values($1, $2, $3)")
+	stmt, err := u.pg.Db.Prepare("INSERT INTO users(login, email, password, sub_expire_date) values($1, $2, $3, $4)")
 	if err != nil {
 		return fmt.Errorf("%s: prepare statement: %w", fn, err)
 	}
 
-	_, err = stmt.Exec(user.Login, user.Email, user.Password)
+	_, err = stmt.Exec(user.Login, user.Email, user.Password, time.Now().Add(-time.Hour*24))
 	if err != nil {
 		if postgresErr, ok := err.(*pq.Error); ok && postgresErr.Code == postgres.UniqueViolationErrorCode {
 			return fmt.Errorf("%s: %w", fn, storage.ErrUserExists)
@@ -38,7 +39,7 @@ func (u *UserRepository) Create(user storage.User) error {
 }
 
 func (u *UserRepository) User(uid int) (storage.User, error) {
-	const fn = "storage.postgres.repos.users.User"
+	const fn = "postgres.repos.users.User"
 
 	var resUser storage.User
 
@@ -59,7 +60,7 @@ func (u *UserRepository) User(uid int) (storage.User, error) {
 }
 
 func (u *UserRepository) CheckCredentials(loginOrEmail, password string) (int64, error) {
-	const fn = "storage.postgres.repos.users.CheckCredentials"
+	const fn = "postgres.repos.users.CheckCredentials"
 
 	stmt, err := u.pg.Db.Prepare("SELECT id FROM users WHERE (login=$1 OR email=$1) AND password=$2")
 	if err != nil {
