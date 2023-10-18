@@ -64,6 +64,6 @@ func New(log *slog.Logger, userCreator UserCreator) http.HandlerFunc {
 			return
 		}
 
-		render.JSON(w, r, resp.OK())
+		w.WriteHeader(http.StatusOK)
 	}
 }

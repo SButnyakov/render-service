@@ -6,7 +6,6 @@ import (
 	"backend-api/internal/lib/logger/sl"
 	"backend-api/internal/storage"
 	"errors"
-	"fmt"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
@@ -17,13 +16,14 @@ import (
 )
 
 type Request struct {
-	LoginOrEmail string `json:"login_or_email" validate:"required"`
+	LoginOrEmail string `json:"login" validate:"required"`
 	Password     string `json:"password" validate:"required"`
 }
 
 type Response struct {
 	resp.Response
-	Token string `json:"token"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 type UserProvider interface {
@@ -87,9 +87,9 @@ func responseError(w http.ResponseWriter, r *http.Request, response resp.Respons
 }
 
 func responseOK(w http.ResponseWriter, r *http.Request, token string) {
-	r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	w.WriteHeader(http.StatusOK)
 	render.JSON(w, r, Response{
-		Response: resp.OK(),
+		AccessToken:  token,
+		RefreshToken: "kto prochital tot dolbaeb",
 	})
 }

@@ -7,6 +7,7 @@ import (
 	"backend-api/internal/server/handlers/signin"
 	"backend-api/internal/server/handlers/signup"
 	"backend-api/internal/server/handlers/subscribe"
+	"backend-api/internal/server/middleware/cors"
 	mwLogger "backend-api/internal/server/middleware/logger"
 	"backend-api/internal/storage/postgres"
 	"backend-api/internal/storage/postgres/repos"
@@ -18,50 +19,58 @@ import (
 	"os"
 )
 
-const (
-	envLocal = "local"
-	envProd  = "prod"
-)
-
 func main() {
+	// Config
 	cfg := config.MustLoad()
 
-	log := setupLogger(cfg.Env)
-	log = log.With(slog.String("env", cfg.Env))
+	// Envs
+	storagePath := os.Getenv(cfg.Storage)
+	jwtSecretKey := os.Getenv(cfg.JWTSecret)
 
+	// Logger
+	log := sl.SetupLogger(cfg.Env)
+	log = log.With(slog.String("env", cfg.Env))
 	log.Info("initializing server", slog.String("address", cfg.Address))
 	log.Debug("logger debug mode enabled")
 
-	pg, err := postgres.New(cfg.StoragePath)
+	// DB
+	pg, err := postgres.New(storagePath)
 	if err != nil {
 		log.Error("failed to initialize storage", sl.Err(err))
 		os.Exit(-1)
 	}
 	defer pg.Db.Close()
 
+	// Repos
 	users := repos.NewUserRepository(pg)
 	orders := repos.NewOrderRepository(pg)
 	payments := repos.NewPaymentRepository(pg)
 	_ = orders
 	_ = payments
 
-	jwtManager, err := tokenManager.New("secret-key")
+	// JWT manager
+	jwtManager, err := tokenManager.New(jwtSecretKey)
 	if err != nil {
 		log.Error("failed to initialie jwt manager", sl.Err(err))
 		os.Exit(-1)
 	}
 
+	// Router
 	router := chi.NewRouter()
 
+	// Router middleware
 	router.Use(middleware.RequestID)
 	router.Use(mwLogger.New(log))
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
+	router.Use(cors.New())
 
+	// Router handlers
 	router.Post("/signup", signup.New(log, users))
 	router.Post("/signin", signin.New(log, users, jwtManager))
 	router.Post("/subscribe", subscribe.New(log))
 
+	// Server
 	server := http.Server{
 		Addr:         cfg.Address,
 		Handler:      router,
@@ -70,22 +79,10 @@ func main() {
 		IdleTimeout:  cfg.HTTPServer.IdleTimeout,
 	}
 
+	// Startup
 	log.Info("starting server", slog.String("address", cfg.Address))
 	if err = server.ListenAndServe(); err != nil {
 		log.Error("failed to start server")
 		os.Exit(-1)
 	}
-}
-
-func setupLogger(env string) *slog.Logger {
-	var log *slog.Logger
-
-	switch env {
-	case envLocal:
-		log = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
-	case envProd:
-		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-	}
-
-	return log
 }

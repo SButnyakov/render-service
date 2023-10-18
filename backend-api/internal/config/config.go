@@ -8,9 +8,9 @@ import (
 )
 
 type Config struct {
-	Env         string `yaml:"env" env-default:"prod"`
-	StoragePath string `yaml:"storage_path" env-required:"true"`
-	HTTPServer  `yaml:"http_server"`
+	Env        string `yaml:"env" env-default:"prod"`
+	HTTPServer `yaml:"http_server"`
+	Envs       `yaml:"envs"`
 }
 
 type HTTPServer struct {
@@ -19,9 +19,13 @@ type HTTPServer struct {
 	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
 }
 
+type Envs struct {
+	Storage   string `yaml:"storage" env-required:"true"`
+	JWTSecret string `yaml:"jwt_secret" env-required:"true"`
+}
+
 func MustLoad() *Config {
-	// configPath := os.Getenv("CONFIG_PATH")
-	configPath := "E:\\projects\\render-service\\backend-api\\config\\local.yaml"
+	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
 		log.Fatal("CONFIG_PATH environment variable is not set")
 	}
