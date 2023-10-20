@@ -24,8 +24,8 @@ func main() {
 	cfg := config.MustLoad()
 
 	// Envs
-	storagePath := os.Getenv(cfg.Storage)
-	jwtSecretKey := os.Getenv(cfg.JWTSecret)
+	storagePath := os.Getenv("STORAGE_PATH")
+	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
 
 	// Logger
 	log := sl.SetupLogger(cfg.Env)
