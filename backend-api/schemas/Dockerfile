@@ -1,7 +1,9 @@
 FROM golang:1.21.3-bookworm
 ENV CONFIG_PATH=/render-service/backend-api/config/
-RUN echo $CONFIG_PATH
 ENV PGDATA=/postgres-storage
+ENV CONFIG_PATH=/mnt/c/users/shadow/desktop/git/render-service/backend-api/config/local.yaml
+ENV STORAGE_PATH=/mnt/c/users/shadow/desktop/git/render-service/backend-api/
+ENV JWT_SECRET_KEY=randomkekv123
 WORKDIR /render-service
 COPY . .
 RUN go mod -C ./backend-api download && go mod -C ./backend-api verify
