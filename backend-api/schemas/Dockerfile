@@ -1,4 +1,4 @@
-FROM golang:1.21.3-bookworm
+FROM postgres:16.0-bookworm
 ENV CONFIG_PATH=/render-service/backend-api/config/
 ENV PGDATA=/postgres-storage
 ENV CONFIG_PATH=/mnt/c/users/shadow/desktop/git/render-service/backend-api/config/local.yaml

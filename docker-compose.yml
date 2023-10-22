@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+    server:
+        build: ./backend-api
+        ports:
+        - 8080:8080
+    frontend:
+        build: ./frontend
+        ports:
+        - 3000:3000
+        depends_on:
+        - server
+#for service
+#volumes:
+#   - 'volume_name':'path_in_container'
+#after specify used volumes
+#volumes:
+#   'volume_name':
