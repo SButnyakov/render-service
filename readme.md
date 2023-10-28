@@ -4,4 +4,9 @@ DB_Digram: https://dbdiagram.io/d/652bda63ffbf5169f0b5c088
 Сборка контейнеров: docker-compose build  
 Запуск: docker-compose up  
 Остановка: docker-compose down  
-Команды выполнять в той же директории, что и docker-compose.yml
+Команды выполнять в той же директории, что и docker-compose.yml  
+Для обращения к базе данных нужно в качестве хоста указать 'postgres'  
+порт 5432  
+пользователь 'user'  
+пароль 'password'  
+база данных 'cloud_render'

@@ -5,15 +5,32 @@ services:
         build: ./backend-api
         ports:
         - 8080:8080
+        depends_on:
+        - postgres
     frontend:
         build: ./frontend
         ports:
         - 3000:3000
         depends_on:
         - server
+    postgres:
+        container_name: data_base_psql
+        build:
+          context: ./backend-api/
+          dockerfile: dbDockerfile
+        environment:
+          POSTGRES_DB: "cloud_render"
+          POSTGRES_USER: "user"
+          POSTGRES_PASSWORD: "password"
+          PGDATA: "/var/lib/postgresql/data/pgdata"
+        volumes:
+            #- ./backend-api/schemas/:/docker-entrypoint-initdb.d/
+            - dbvolume:/var/lib/postgresql/data
+        ports:
+          - 5432:5432
+volumes:
+    dbvolume:
 #for service
-#volumes:
+#
 #   - 'volume_name':'path_in_container'
 #after specify used volumes
-#volumes:
-#   'volume_name':
