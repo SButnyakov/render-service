@@ -108,6 +108,7 @@ func responseError(w http.ResponseWriter, r *http.Request, response resp.Respons
 func responseOK(w http.ResponseWriter, r *http.Request, accessToken, refreshToken string) {
 	w.WriteHeader(http.StatusOK)
 	render.JSON(w, r, Response{
+		Response:     resp.OK(),
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	})

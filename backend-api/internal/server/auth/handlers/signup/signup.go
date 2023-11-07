@@ -23,6 +23,10 @@ type Request struct {
 	Password string `json:"password" validate:"required,min=8,max=30"`
 }
 
+type Response struct {
+	resp.Response
+}
+
 type UserCreator interface {
 	Create(storage.User) error
 }
@@ -41,19 +45,19 @@ func New(log *slog.Logger, userCreator UserCreator) http.HandlerFunc {
 		err := render.DecodeJSON(r.Body, &req)
 		if errors.Is(err, io.EOF) {
 			log.Error("request body is empty")
-			render.JSON(w, r, resp.Error("empty request"))
+			responseError(w, r, resp.Error("empty request"), http.StatusBadRequest)
 			return
 		}
 		if err != nil {
 			log.Error("failed to decode request body", sl.Err(err))
-			render.JSON(w, r, resp.Error("failed to decode request"))
+			responseError(w, r, resp.Error("failed to decode request"), http.StatusBadRequest)
 			return
 		}
 
 		if err = validator.New().Struct(req); err != nil {
 			validateErr := err.(validator.ValidationErrors)
 			log.Error("invalid request", sl.Err(err))
-			render.JSON(w, r, resp.ValidationError(validateErr))
+			responseError(w, r, resp.ValidationError(validateErr), http.StatusBadRequest)
 			return
 		}
 
@@ -61,13 +65,27 @@ func New(log *slog.Logger, userCreator UserCreator) http.HandlerFunc {
 		err = userCreator.Create(user)
 		if errors.Is(err, storage.ErrUserExists) {
 			render.JSON(w, r, resp.Error("user with the same login or email already exists"))
+			responseError(w, r, resp.Error("user with the same login or email already exists"), http.StatusBadRequest)
 			return
 		}
 		if err != nil {
-			render.JSON(w, r, resp.Error(err.Error()))
+			log.Error("failed to create new user", sl.Err(err))
+			responseError(w, r, resp.Error(err.Error()), http.StatusBadRequest)
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
+		responseOK(w, r)
 	}
+}
+
+func responseError(w http.ResponseWriter, r *http.Request, response resp.Response, status int) {
+	w.WriteHeader(status)
+	render.JSON(w, r, response)
+}
+
+func responseOK(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	render.JSON(w, r, Response{
+		Response: resp.OK(),
+	})
 }
