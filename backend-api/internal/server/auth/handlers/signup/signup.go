@@ -13,8 +13,12 @@ import (
 	"net/http"
 )
 
+const (
+	packagePath = "server.auth.handlers.signup."
+)
+
 type Request struct {
-	Login    string `json:"login" validate:"required"`
+	Login    string `json:"login" validate:"required,min=4,max=15"`
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=8,max=30"`
 }
@@ -25,7 +29,7 @@ type UserCreator interface {
 
 func New(log *slog.Logger, userCreator UserCreator) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const fn = "handlers.signup.New"
+		const fn = packagePath + "New"
 
 		log = log.With(
 			slog.String("fn", fn),

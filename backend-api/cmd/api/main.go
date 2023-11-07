@@ -2,11 +2,8 @@ package main
 
 import (
 	"backend-api/internal/config"
-	"backend-api/internal/lib/api/tokenManager"
 	"backend-api/internal/lib/logger/sl"
-	"backend-api/internal/server/handlers/signin"
-	"backend-api/internal/server/handlers/signup"
-	"backend-api/internal/server/handlers/subscribe"
+	"backend-api/internal/server/api/handlers/subscribe"
 	"backend-api/internal/server/middleware/cors"
 	mwLogger "backend-api/internal/server/middleware/logger"
 	"backend-api/internal/storage/postgres"
@@ -20,12 +17,12 @@ import (
 )
 
 func main() {
-	// Config
-	cfg := config.MustLoad()
-
 	// Envs
-	storagePath := os.Getenv("STORAGE_PATH")
-	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
+	cfgPath := os.Getenv("API_CONFIG_PATH")
+	storagePath := os.Getenv("API_STORAGE_PATH")
+
+	// Config
+	cfg := config.MustLoad(cfgPath)
 
 	// Logger
 	log := sl.SetupLogger(cfg.Env)
@@ -42,18 +39,12 @@ func main() {
 	defer pg.Db.Close()
 
 	// Repos
-	users := repos.NewUserRepository(pg)
 	orders := repos.NewOrderRepository(pg)
 	payments := repos.NewPaymentRepository(pg)
 	_ = orders
 	_ = payments
 
 	// JWT manager
-	jwtManager, err := tokenManager.New(jwtSecretKey)
-	if err != nil {
-		log.Error("failed to initialie jwt manager", sl.Err(err))
-		os.Exit(-1)
-	}
 
 	// Router
 	router := chi.NewRouter()
@@ -66,8 +57,6 @@ func main() {
 	router.Use(cors.New())
 
 	// Router handlers
-	router.Post("/signup", signup.New(log, users))
-	router.Post("/signin", signin.New(log, users, jwtManager))
 	router.Post("/subscribe", subscribe.New(log))
 
 	// Server

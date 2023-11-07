@@ -10,6 +10,11 @@ import (
 	"time"
 )
 
+// TODO: dynamic package path
+const (
+	PackagePath = "storage.postgres.repos.users."
+)
+
 type UserRepository struct {
 	pg *postgres.PGStorage
 }
@@ -19,7 +24,7 @@ func NewUserRepository(pg *postgres.PGStorage) *UserRepository {
 }
 
 func (u *UserRepository) Create(user storage.User) error {
-	const fn = "postgres.repos.users.Create"
+	const fn = PackagePath + "Create"
 
 	stmt, err := u.pg.Db.Prepare("INSERT INTO users(login, email, password, sub_expire_date) values($1, $2, $3, $4)")
 	if err != nil {
@@ -39,7 +44,7 @@ func (u *UserRepository) Create(user storage.User) error {
 }
 
 func (u *UserRepository) User(uid int) (storage.User, error) {
-	const fn = "postgres.repos.users.User"
+	const fn = PackagePath + "User"
 
 	var resUser storage.User
 
@@ -60,7 +65,7 @@ func (u *UserRepository) User(uid int) (storage.User, error) {
 }
 
 func (u *UserRepository) CheckCredentials(loginOrEmail, password string) (int64, error) {
-	const fn = "postgres.repos.users.CheckCredentials"
+	const fn = PackagePath + "CheckCredentials"
 
 	stmt, err := u.pg.Db.Prepare("SELECT id FROM users WHERE (login=$1 OR email=$1) AND password=$2")
 	if err != nil {
@@ -70,12 +75,51 @@ func (u *UserRepository) CheckCredentials(loginOrEmail, password string) (int64,
 	var uid int64
 
 	err = stmt.QueryRow(loginOrEmail, password).Scan(&uid)
-	if errors.Is(err, sql.ErrNoRows) {
-		return 0, storage.ErrInvalidCredentials
-	}
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, storage.ErrInvalidCredentials
+		}
+
 		return 0, fmt.Errorf("%s: execute statement: %w", fn, err)
 	}
 
 	return uid, nil
+}
+
+func (u *UserRepository) UpdateRefreshToken(uid int64, refreshToken string) error {
+	const fn = PackagePath + "UpdateRefreshToken"
+
+	stmt, err := u.pg.Db.Prepare("UPDATE users SET refresh_token = $1 WHERE id = $2")
+	if err != nil {
+		return fmt.Errorf("%s: prepare statement: %w", fn, err)
+	}
+
+	_, err = stmt.Exec(refreshToken, uid)
+	if err != nil {
+		return fmt.Errorf("%s: exec statement: %w", fn, err)
+	}
+
+	return nil
+}
+
+func (u *UserRepository) GetRefreshToken(uid int64) (string, error) {
+	const fn = PackagePath + "GetRefreshToken"
+
+	stmt, err := u.pg.Db.Prepare("SELECT refresh_token FROM users WHERE id = $1")
+	if err != nil {
+		return "", fmt.Errorf("%s: prepare statement: %w", fn, err)
+	}
+
+	var token string
+
+	err = stmt.QueryRow(uid).Scan(&token)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", storage.ErrUserNotFound
+		}
+
+		return "", fmt.Errorf("%s: execute statement: %w", fn, err)
+	}
+
+	return token, nil
 }

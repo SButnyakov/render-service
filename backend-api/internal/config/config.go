@@ -18,13 +18,11 @@ type HTTPServer struct {
 	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
 }
 
-func MustLoad() *Config {
-	configPath := "../../config/local.yaml"
-
+func MustLoad(configPath string) *Config {
 	if _, err := os.Stat(configPath); err != nil {
 		log.Fatalf("error opening config file: %s", err)
 	}
-
+	
 	var cfg Config
 
 	err := cleanenv.ReadConfig(configPath, &cfg)

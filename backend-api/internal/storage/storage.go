@@ -28,6 +28,23 @@ type Order struct {
 type Payment struct {
 	Id       int64
 	DateTime time.Time
-	TypeId   string
-	UserID   string
+	TypeId   int64
+	UserID   int64
+}
+
+type PaymentType struct {
+	Id   int64
+	Name string
+}
+
+type Subscription struct {
+	Id         int64
+	UserId     int64
+	TypeId     int64
+	ExpireDate time.Time
+}
+
+type SubscriptionType struct {
+	Id   int64
+	Name string
 }

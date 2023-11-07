@@ -8,6 +8,6 @@ WORKDIR /backend-api
 COPY . .
 RUN go mod download && go mod verify
 RUN go mod tidy
-RUN go build -C ./cmd/backend-api -o serverApp
+RUN go build -C ./cmd/api -o serverApp
 WORKDIR /backend-api/cmd/backend-api
 CMD ["./serverApp"]
