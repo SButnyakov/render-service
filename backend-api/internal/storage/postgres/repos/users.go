@@ -64,6 +64,25 @@ func (u *UserRepository) User(uid int) (storage.User, error) {
 	return resUser, nil
 }
 
+func (u *UserRepository) Update(uid int64, user storage.User) error {
+	const fn = PackagePath + "Update"
+
+	stmt, err := u.pg.Db.Prepare("UPDATE users SET login=$2, email=$3, password=$4 WHERE id=$1")
+	if err != nil {
+		return fmt.Errorf("%s: prepare statement: %w", fn, err)
+	}
+
+	_, err = stmt.Exec(uid, user.Login, user.Email, user.Password)
+	if errors.Is(err, sql.ErrNoRows) {
+		return storage.ErrUserNotFound
+	}
+	if err != nil {
+		return fmt.Errorf("%s: execute statement: %w", fn, err)
+	}
+
+	return nil
+}
+
 func (u *UserRepository) CheckCredentials(loginOrEmail, password string) (int64, error) {
 	const fn = PackagePath + "CheckCredentials"
 

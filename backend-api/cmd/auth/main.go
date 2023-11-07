@@ -4,10 +4,10 @@ import (
 	"backend-api/internal/config"
 	"backend-api/internal/lib/api/tokenManager"
 	"backend-api/internal/lib/logger/sl"
+	"backend-api/internal/server/auth/handlers/edit"
 	"backend-api/internal/server/auth/handlers/refresh"
 	"backend-api/internal/server/auth/handlers/signin"
 	"backend-api/internal/server/auth/handlers/signup"
-	"backend-api/internal/server/auth/handlers/update"
 	"backend-api/internal/server/middleware/auth"
 	"backend-api/internal/server/middleware/cors"
 	mwLogger "backend-api/internal/server/middleware/logger"
@@ -66,11 +66,11 @@ func main() {
 	// Router handlers
 	router.Post("/signup", signup.New(log, users))
 	router.Post("/signin", signin.New(log, users, jwtManager))
-	router.Post("/refresh", refresh.New(log, users, jwtManager, jwtSecretKey))
+	router.Put("/refresh", refresh.New(log, users, jwtManager, jwtSecretKey))
 
 	router.Group(func(r chi.Router) {
 		r.Use(auth.New(log, jwtManager, jwtSecretKey))
-		r.Put("/update", update.New(log))
+		r.Put("/user/edit", edit.New(log, users))
 	})
 
 	// Server
