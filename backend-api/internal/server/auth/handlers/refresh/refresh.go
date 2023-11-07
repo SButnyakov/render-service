@@ -94,7 +94,7 @@ func New(log *slog.Logger, provider TokenProvider, m *tokenManager.Manager, secr
 
 		if token != req.RefreshToken {
 			log.Error("refresh tokens do not match")
-			responseError(w, r, resp.Error("failed to get refresh token"), http.StatusUnauthorized)
+			responseError(w, r, resp.Error("refresh tokens do not match"), http.StatusUnauthorized)
 			return
 		}
 
@@ -116,7 +116,7 @@ func New(log *slog.Logger, provider TokenProvider, m *tokenManager.Manager, secr
 			return
 		}
 
-		err = provider.UpdateRefreshToken(uid, req.RefreshToken)
+		err = provider.UpdateRefreshToken(uid, refreshToken)
 		if err != nil {
 			log.Error("failed to update refresh token")
 			responseError(w, r, resp.Error("failed to update refresh token"), http.StatusInternalServerError)
@@ -135,6 +135,7 @@ func responseError(w http.ResponseWriter, r *http.Request, response resp.Respons
 func responseOK(w http.ResponseWriter, r *http.Request, accessToken, refreshToken string) {
 	w.WriteHeader(http.StatusOK)
 	render.JSON(w, r, Response{
+		Response:     resp.OK(),
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	})

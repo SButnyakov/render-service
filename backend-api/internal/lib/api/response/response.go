@@ -6,13 +6,26 @@ import (
 	"strings"
 )
 
+const (
+	StatusOK    = "OK"
+	StatusError = "Error"
+)
+
 type Response struct {
-	Error string `json:"error,omitempty"`
+	Status string `json:"status"`
+	Error  string `json:"error,omitempty"`
+}
+
+func OK() Response {
+	return Response{
+		Status: StatusOK,
+	}
 }
 
 func Error(msg string) Response {
 	return Response{
-		Error: msg,
+		Status: StatusError,
+		Error:  msg,
 	}
 }
 
