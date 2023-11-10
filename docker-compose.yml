@@ -4,7 +4,8 @@ services:
     server:
         build: ./backend-api
         ports:
-        - 8080:8080
+        - 8080:8000
+        - 8081:8001
         depends_on:
         - postgres
     frontend:
@@ -15,9 +16,7 @@ services:
         - server
     postgres:
         container_name: data_base_psql
-        build:
-          context: ./backend-api/
-          dockerfile: dbDockerfile
+        build: ./backend-api/schemas
         environment:
           POSTGRES_DB: "cloud_render"
           POSTGRES_USER: "user"
