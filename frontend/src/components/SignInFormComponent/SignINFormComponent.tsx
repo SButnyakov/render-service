@@ -1,16 +1,28 @@
 import React, { FormEvent, useState } from "react";
-import { useAppDispatch } from "../../store";
-import { loginUser } from "../../store/auth/actionCreators";
+import { auth } from "../../http/userAPI";
+import { observer } from "mobx-react-lite";
 
-export const SignInForm = () => {
+import UserStore from "../../store/UserStore";
+
+export const SignInForm = observer(() => {
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
 
-  const disapatch = useAppDispatch()
-
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    disapatch(loginUser({login, password}));
+    signIn()
+  }
+
+  const signIn = async () => {
+    try {
+      const userData = await auth(login, password)
+
+      UserStore.setUser(userData)
+      UserStore.setIsAuth(true)
+    }
+    catch (e: any) {
+      console.error(e.message)
+    }
   }
 
   return(
@@ -30,7 +42,7 @@ export const SignInForm = () => {
           <label htmlFor="password">Password:</label>
           <input 
             name="password" 
-            type="text" 
+            type="password" 
             value={password} 
             onChange={e => {setPassword(e.target.value)}}
           />
@@ -39,6 +51,6 @@ export const SignInForm = () => {
       </form>
     </div>
   )
-}
+})
 
 export default SignInForm;
