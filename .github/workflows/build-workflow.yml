@@ -1,0 +1,42 @@
+name: project build workflow
+on: [push, workflow_dispatch]
+jobs:
+  go-build:
+    runs-on: self-hosted
+    steps:
+      - name: pull req
+        uses: actions/checkout@v4
+      - name: installing go
+        working-directory: ./backend-api
+        run: go mod download 1> /dev/null && go mod verify 1> /dev/null
+      - name: uploading dependencies
+        working-directory: ./backend-api
+        run: go mod tidy 1> /dev/null
+      - name: building serverAPI
+        working-directory: ./backend-api
+        run: go build -C ./cmd/api -o ./../serverAPI 1> /dev/null
+        timeout-minutes: 5
+      - name: building serverAuth
+        working-directory: ./backend-api
+        run: go build -C ./cmd/api -o ./../serverAPI 1> /dev/null
+        timeout-minutes: 5
+  node.js-build:
+    runs-on: self-hosted
+    steps:
+      - name: pull req
+        uses: actions/checkout@v4
+      - name: installing local dependencies
+        working-directory: ./frontend
+        run: npm ci 1> /dev/null
+        timeout-minutes: 10
+      - name: building node.js
+        working-directory: ./frontend
+        run: npm run build 1> /dev/null
+        timeout-minutes: 10
+  docker-build:
+    runs-on: self-hosted
+    steps:
+      - name: pull req
+        uses: actions/checkout@v4
+      - name: building docker containers
+        run: docker-compose build
