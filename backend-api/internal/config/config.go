@@ -29,7 +29,7 @@ type Redis struct {
 }
 
 type Payments struct {
-	SubPremiumMonth string `yaml:"sub_premium_month" env-required:"sub-premium-month"`
+	SubPremiumMonth string `yaml:"sub_premium_month" env-default:"sub-premium-month"`
 }
 
 type Subscriptions struct {

@@ -14,8 +14,8 @@ import (
 
 type SubscriptionProvider interface {
 	GetExpireDate(int64) (*time.Time, error)
-	Create(storage.Subscription) error
-	Update(subscription storage.Subscription) error
+	Create(storage.Subscription, storage.Payment) error
+	Update(storage.Subscription, storage.Payment) error
 }
 
 type SubscriptionTypeProvider interface {
@@ -53,16 +53,6 @@ func New(log *slog.Logger, cfg *config.Config, pCreator PaymentCreator, ptProvid
 			return
 		}
 
-		err = pCreator.Create(storage.Payment{
-			UserID:   uid,
-			TypeId:   pTypeId,
-			DateTime: time.Now()})
-		if err != nil {
-			log.Error("failed to create payment record")
-			responseError(w, r, resp.Error("failed to create payment record"), http.StatusInternalServerError)
-			return
-		}
-
 		sTypeId, err := stProvider.GetID(cfg.Subscriptions.Premium)
 		if err != nil {
 			log.Error("invalid subscription type")
@@ -76,7 +66,11 @@ func New(log *slog.Logger, cfg *config.Config, pCreator PaymentCreator, ptProvid
 				err = sProvider.Create(storage.Subscription{
 					UserId:     uid,
 					TypeId:     sTypeId,
-					ExpireDate: time.Now().AddDate(0, 1, 0)})
+					ExpireDate: time.Now().AddDate(0, 1, 0)},
+					storage.Payment{
+						UserID:   uid,
+						TypeId:   pTypeId,
+						DateTime: time.Now()})
 				if err != nil {
 					log.Error("failed to subscribe")
 					responseError(w, r, resp.Error("subscribing failed"), http.StatusInternalServerError)
@@ -94,7 +88,11 @@ func New(log *slog.Logger, cfg *config.Config, pCreator PaymentCreator, ptProvid
 		err = sProvider.Update(storage.Subscription{
 			UserId:     uid,
 			TypeId:     sTypeId,
-			ExpireDate: expireDate.AddDate(0, 1, 0)})
+			ExpireDate: expireDate.AddDate(0, 1, 0)},
+			storage.Payment{
+				UserID:   uid,
+				TypeId:   pTypeId,
+				DateTime: time.Now()})
 		if err != nil {
 			log.Error("failed to subscribe")
 			responseError(w, r, resp.Error("subscribing failed"), http.StatusInternalServerError)
