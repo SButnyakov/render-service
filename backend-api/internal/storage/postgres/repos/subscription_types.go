@@ -14,7 +14,7 @@ func NewSubscriptionTypeRepository(pg *postgres.PGStorage) *SubscriptionTypeRepo
 }
 
 func (p *SubscriptionTypeRepository) GetID(name string) error {
-	const fn = "postgres.repos.payment_types.GetID"
+	const fn = "postgres.repos.subscription_types.GetID"
 
 	stmt, err := p.pg.Db.Prepare("SELECT id FROM subscription_types WHERE name = $1")
 	if err != nil {
