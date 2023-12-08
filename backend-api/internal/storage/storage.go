@@ -6,9 +6,11 @@ import (
 )
 
 var (
-	ErrUserNotFound       = errors.New("user not found")
-	ErrUserExists         = errors.New("user already exists")
-	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrFailedToConnect      = errors.New("failed to connect to storage")
+	ErrUserNotFound         = errors.New("user not found")
+	ErrUserExists           = errors.New("user already exists")
+	ErrInvalidCredentials   = errors.New("invalid credentials")
+	ErrSubscriptionNotFound = errors.New("subscription not found")
 )
 
 type User struct {
@@ -47,4 +49,9 @@ type Subscription struct {
 type SubscriptionType struct {
 	Id   int64
 	Name string
+}
+
+// TODO: subscribtion info
+type RedisData struct {
+	SavePath string
 }
