@@ -4,7 +4,6 @@ import (
 	"backend-api/internal/storage"
 	"backend-api/internal/storage/postgres"
 	"fmt"
-	"github.com/lib/pq"
 )
 
 type PaymentRepository struct {
@@ -25,10 +24,6 @@ func (p *PaymentRepository) Create(payment storage.Payment) error {
 
 	_, err = stmt.Exec(payment.DateTime, payment.TypeId, payment.UserID)
 	if err != nil {
-		if postgresErr, ok := err.(*pq.Error); ok && postgresErr.Code == postgres.UniqueViolationErrorCode {
-			return fmt.Errorf("%s: %w", fn, storage.ErrUserExists)
-		}
-
 		return fmt.Errorf("%s: execute statement: %w", fn, err)
 	}
 
