@@ -6,11 +6,12 @@ import (
 )
 
 var (
-	ErrFailedToConnect      = errors.New("failed to connect to storage")
-	ErrUserNotFound         = errors.New("user not found")
-	ErrUserExists           = errors.New("user already exists")
-	ErrInvalidCredentials   = errors.New("invalid credentials")
-	ErrSubscriptionNotFound = errors.New("subscription not found")
+	ErrFailedToConnect               = errors.New("failed to connect to storage")
+	ErrUserNotFound                  = errors.New("user not found")
+	ErrUserExists                    = errors.New("user already exists")
+	ErrInvalidCredentials            = errors.New("invalid credentials")
+	ErrSubscriptionNotFound          = errors.New("subscription not found")
+	ErrSubscriptionTypeDoesNotExists = errors.New("subscription type does not exists")
 )
 
 type User struct {
