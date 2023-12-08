@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func New(log *slog.Logger, m *tokenManager.Manager, secret string) func(next http.Handler) http.Handler {
+func New(log *slog.Logger, m *tokenManager.Manager) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
 			header := r.Header.Get("Authorization")
@@ -36,7 +36,7 @@ func New(log *slog.Logger, m *tokenManager.Manager, secret string) func(next htt
 				return
 			}
 
-			claims, err := m.Parse(headerParts[1], secret)
+			claims, err := m.Parse(headerParts[1])
 			if err != nil {
 				log.Error("failed to parse token", sl.Err(err))
 				responseError(w, r, resp.Error(err.Error()), http.StatusUnauthorized)
