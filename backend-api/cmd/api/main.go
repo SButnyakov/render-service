@@ -2,12 +2,15 @@ package main
 
 import (
 	"backend-api/internal/config"
+	"backend-api/internal/lib/api/tokenManager"
 	"backend-api/internal/lib/logger/sl"
 	"backend-api/internal/server/api/handlers/subscribe"
+	"backend-api/internal/server/middleware/auth"
 	"backend-api/internal/server/middleware/cors"
 	mwLogger "backend-api/internal/server/middleware/logger"
 	"backend-api/internal/storage/postgres"
 	"backend-api/internal/storage/postgres/repos"
+	"backend-api/internal/storage/redis"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/lib/pq"
@@ -20,6 +23,8 @@ func main() {
 	// Envs
 	cfgPath := os.Getenv("API_CONFIG_PATH")
 	storagePath := os.Getenv("API_STORAGE_PATH")
+	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
+	inputPath := os.Getenv("BUFFER_INPUT_PATH")
 
 	// Config
 	cfg := config.MustLoad(cfgPath)
@@ -27,7 +32,7 @@ func main() {
 	// Logger
 	log := sl.SetupLogger(cfg.Env)
 	log = log.With(slog.String("env", cfg.Env))
-	log.Info("initializing server", slog.String("address", cfg.Address))
+	log.Info("initializing server", slog.String("address", cfg.HTTPServer.Address))
 	log.Debug("logger debug mode enabled")
 
 	// DB
@@ -40,11 +45,26 @@ func main() {
 
 	// Repos
 	orders := repos.NewOrderRepository(pg)
+	paymentTypes := repos.NewPaymentTypeRepository(pg)
 	payments := repos.NewPaymentRepository(pg)
+	subscriptionTypes := repos.NewSubscriptionTypeRepository(pg)
+	subscriptions := repos.NewSubscriptionRepository(pg)
 	_ = orders
-	_ = payments
+
+	// Redis
+	client, err := redis.New(cfg.Redis.Address)
+	if err != nil {
+		log.Error("failed to initialize redis", sl.Err(err))
+		os.Exit(-1)
+	}
+	defer client.Close()
 
 	// JWT manager
+	jwtManager, err := tokenManager.New(jwtSecretKey)
+	if err != nil {
+		log.Error("failed to initialize jwt token manager", sl.Err(err))
+		os.Exit(-1)
+	}
 
 	// Router
 	router := chi.NewRouter()
@@ -55,13 +75,14 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 	router.Use(cors.New())
+	router.Use(auth.New(log, jwtManager))
 
 	// Router handlers
-	router.Post("/subscribe", subscribe.New(log))
-
+	router.Post("/subscribe", subscribe.New(log, cfg, payments, paymentTypes, subscriptionTypes, subscriptions))
+	
 	// Server
 	server := http.Server{
-		Addr:         cfg.Address,
+		Addr:         cfg.HTTPServer.Address,
 		Handler:      router,
 		ReadTimeout:  cfg.HTTPServer.Timeout,
 		WriteTimeout: cfg.HTTPServer.Timeout,
@@ -69,7 +90,7 @@ func main() {
 	}
 
 	// Startup
-	log.Info("starting server", slog.String("address", cfg.Address))
+	log.Info("starting server", slog.String("address", cfg.HTTPServer.Address))
 	if err = server.ListenAndServe(); err != nil {
 		log.Error("failed to start server")
 		os.Exit(-1)
