@@ -8,21 +8,39 @@ import (
 )
 
 type Config struct {
-	Env        string `yaml:"env" env-default:"prod"`
-	HTTPServer `yaml:"http_server"`
+	Env           string `yaml:"env" env-default:"prod"`
+	HTTPServer    `yaml:"http_server"`
+	Redis         `yaml:"redis"`
+	Payments      `yaml:"payments"`
+	Subscriptions `yaml:"subscriptions"`
 }
 
 type HTTPServer struct {
 	Address     string        `yaml:"address" env-default:"localhost:8080"`
-	Timeout     time.Duration `yaml:"timeout" env-defult:"5s"`
+	Timeout     time.Duration `yaml:"timeout" env-default:"5s"`
 	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
+}
+
+type Redis struct {
+	Address           string `yaml:"address" env-default:"localhost:6379"`
+	QueueName         string `yaml:"queue_name" env-default:"render-list"`
+	PriorityQueueName string `yaml:"priority_queue_name" env-default:"render-list"`
+	MaxPriorityInARow int    `yaml:"max_priority_in_a_row" env-default:"5"`
+}
+
+type Payments struct {
+	SubPremiumMonth string `yaml:"sub_premium_month" env-required:"sub-premium-month"`
+}
+
+type Subscriptions struct {
+	Premium string `yaml:"premium" env-default:"premium"`
 }
 
 func MustLoad(configPath string) *Config {
 	if _, err := os.Stat(configPath); err != nil {
 		log.Fatalf("error opening config file: %s", err)
 	}
-	
+
 	var cfg Config
 
 	err := cleanenv.ReadConfig(configPath, &cfg)
