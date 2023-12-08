@@ -32,7 +32,7 @@ func main() {
 	// Logger
 	log := sl.SetupLogger(cfg.Env)
 	log = log.With(slog.String("env", cfg.Env))
-	log.Info("initializing service", slog.String("address", cfg.Address))
+	log.Info("initializing service", slog.String("address", cfg.HTTPServer.Address))
 	log.Debug("logger debug mode enabled")
 
 	// DB
@@ -66,23 +66,23 @@ func main() {
 	// Router handlers
 	router.Post("/signup", signup.New(log, users))
 	router.Post("/signin", signin.New(log, users, jwtManager))
-	router.Put("/refresh", refresh.New(log, users, jwtManager, jwtSecretKey))
+	router.Put("/refresh", refresh.New(log, users, jwtManager))
 
 	router.Group(func(r chi.Router) {
-		r.Use(auth.New(log, jwtManager, jwtSecretKey))
+		r.Use(auth.New(log, jwtManager))
 		r.Put("/user/edit", edit.New(log, users))
 	})
 
 	// Server
 	server := http.Server{
-		Addr:         cfg.Address,
+		Addr:         cfg.HTTPServer.Address,
 		Handler:      router,
 		ReadTimeout:  cfg.HTTPServer.Timeout,
 		WriteTimeout: cfg.HTTPServer.Timeout,
 		IdleTimeout:  cfg.HTTPServer.IdleTimeout,
 	}
 
-	log.Info("starting server", slog.String("address", cfg.Address))
+	log.Info("starting server", slog.String("address", cfg.HTTPServer.Address))
 	if err = server.ListenAndServe(); err != nil {
 		log.Error("failed to start server")
 		os.Exit(-1)
