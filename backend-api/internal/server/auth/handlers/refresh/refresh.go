@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	PackagePath = "server.handlers.signin."
+	PackagePath = "server.auth.handlers.signin."
 )
 
 type Request struct {
@@ -34,7 +34,7 @@ type TokenProvider interface {
 	UpdateRefreshToken(uid int64, refreshToken string) error
 }
 
-func New(log *slog.Logger, provider TokenProvider, m *tokenManager.Manager, secret string) http.HandlerFunc {
+func New(log *slog.Logger, provider TokenProvider, m *tokenManager.Manager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const fn = PackagePath + "New"
 
@@ -47,7 +47,7 @@ func New(log *slog.Logger, provider TokenProvider, m *tokenManager.Manager, secr
 
 		err := render.DecodeJSON(r.Body, &req)
 		if errors.Is(err, io.EOF) {
-			log.Error("request body is empty")
+			log.Error("request body is empty", sl.Err(err))
 			responseError(w, r, resp.Error("empty request"), http.StatusBadRequest)
 			return
 		}
@@ -64,7 +64,7 @@ func New(log *slog.Logger, provider TokenProvider, m *tokenManager.Manager, secr
 			return
 		}
 
-		claims, err := m.Parse(req.RefreshToken, secret)
+		claims, err := m.Parse(req.RefreshToken)
 		if err != nil {
 			log.Error("invalid refresh token", sl.Err(err))
 			responseError(w, r, resp.Error("invalid refresh token"), http.StatusBadRequest)
