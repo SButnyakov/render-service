@@ -43,13 +43,13 @@ func (m *Manager) NewRT(uid int64) (string, error) {
 	return token.SignedString([]byte(m.signingKey))
 }
 
-func (m *Manager) Parse(token, secret string) (*jwt.StandardClaims, error) {
+func (m *Manager) Parse(token string) (*jwt.StandardClaims, error) {
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
 			return nil, ErrInvalidToken
 		}
-		return []byte(secret), nil
+		return []byte(m.signingKey), nil
 	}
 
 	jwtToken, err := jwt.ParseWithClaims(token, &jwt.StandardClaims{}, keyFunc)
