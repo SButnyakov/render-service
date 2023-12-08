@@ -41,3 +41,6 @@ CREATE TABLE IF NOT EXISTS subscriptions(
     sub_expire_date timestamp NOT NULL,
     FOREIGN KEY (type_id) REFERENCES subscription_types (id)
 );
+
+INSERT INTO payment_types (name) VALUES ('sub-premium-month');
+INSERT INTO subscription_types (name) VALUES ('premium');

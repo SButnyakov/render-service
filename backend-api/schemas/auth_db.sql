@@ -5,6 +5,5 @@ CREATE TABLE IF NOT EXISTS users(
     login text UNIQUE NOT NULL,
     email text UNIQUE NOT NULL,
     password text NOT NULL,
-    sub_expire_date timestamp NOT NULL,
     refresh_token text
 );
