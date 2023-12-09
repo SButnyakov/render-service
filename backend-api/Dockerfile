@@ -3,8 +3,8 @@ FROM golang:1.21.3-bullseye
 ENV PGDATA=/postgres-storage
 ENV API_CONFIG_PATH=/backend-api/config/localapi.yaml
 ENV AUTH_CONFIG_PATH=/backend-api/config/localauth.yaml
-ENV API_STORAGE_PATH=user=user password=password dbname=cloud_render_api sslmode=disable
-ENV AUTH_STORAGE_PATH=user=user password=password dbname=cloud_render_auth sslmode=disable
+ENV API_STORAGE_PATH="user=user password=password dbname=cloud_render_api sslmode=disable"
+ENV AUTH_STORAGE_PATH="user=user password=password dbname=cloud_render_auth sslmode=disable"
 ENV BUFFER_CONFIG_PATH=/backend-api/config/localbuffer.yaml
 ENV JWT_SECRET_KEY=randomkekv123
 WORKDIR /backend-api
