@@ -5,6 +5,7 @@ ENV API_CONFIG_PATH=/backend-api/config/localapi.yaml
 ENV AUTH_CONFIG_PATH=/backend-api/config/localauth.yaml
 ENV API_STORAGE_PATH=/backend-api/internal/storage/
 ENV AUTH_STORAGE_PATH=/backend-api/internal/storage/
+ENV BUFFER_CONFIG_PATH=/backend-api/config/localbuffer.yaml
 ENV JWT_SECRET_KEY=randomkekv123
 WORKDIR /backend-api
 COPY . .
@@ -12,5 +13,6 @@ RUN go mod download && go mod verify
 RUN go mod tidy
 RUN go build -C ./cmd/api -o ./../serverAPI
 RUN go build -C ./cmd/api -o ./../serverAuth
+RUN go build -C ./cmd/buffer -o ./../serverBuff
 WORKDIR /backend-api/cmd/
-CMD ["./serverAPI", "&&", "./serverAuth"]
+CMD ["./serverAPI", "&&", "./serverAuth", "&&", "./serverBuff"]

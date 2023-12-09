@@ -20,6 +20,14 @@ jobs:
         working-directory: ./backend-api
         run: go build -C ./cmd/api -o ./../serverAPI 1> /dev/null
         timeout-minutes: 5
+      - name: building buffer
+        working-directory: ./backend-api
+        run: go build -C ./cmd/buffer -o ./../serverBuff 1> /dev/null
+        timeout-minutes: 5
+      - name: build render app
+        working-directory: ./render-app
+        run: go build -o ./renderApp
+        timeout-minutes: 2
   node_js-build:
     runs-on: self-hosted
     steps:
@@ -29,14 +37,19 @@ jobs:
         working-directory: ./frontend
         run: npm ci 1> /dev/null
         timeout-minutes: 10
+      - name: unset CI to suppress warnings
+        working-directory: ./frontend
+        run: unset CI
       - name: building node.js
         working-directory: ./frontend
         run: npm run build 1> /dev/null
         timeout-minutes: 10
   docker-build:
     runs-on: self-hosted
+    needs: [node_js-build,go-build]
     steps:
       - name: pull req
         uses: actions/checkout@v4
       - name: building docker containers
         run: docker-compose build
+        timeout-minutes: 30
