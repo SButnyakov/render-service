@@ -46,7 +46,6 @@ func main() {
 	orderStatuses := repos.NewOrderStatusesRepository(pg)
 	orders := repos.NewOrderRepository(pg)
 	paymentTypes := repos.NewPaymentTypeRepository(pg)
-	payments := repos.NewPaymentRepository(pg)
 	subscriptionTypes := repos.NewSubscriptionTypeRepository(pg)
 	subscriptions := repos.NewSubscriptionRepository(pg)
 	_ = orders
@@ -55,6 +54,11 @@ func main() {
 	orderStatusesMap, err := orderStatuses.GetStatusesMap()
 	if err != nil {
 		log.Error("failed to get order statuses", sl.Err(err))
+		os.Exit(-1)
+	}
+	paymentTypesMap, err := paymentTypes.GetTypesMap()
+	if err != nil {
+		log.Error("failed to get payment types", sl.Err(err))
 		os.Exit(-1)
 	}
 	_ = orderStatusesMap
@@ -88,7 +92,7 @@ func main() {
 	router.Use(auth.New(log, jwtManager))
 
 	// Router handlers
-	router.Post("/subscribe", subscribe.New(log, cfg, payments, paymentTypes, subscriptionTypes, subscriptions))
+	router.Post("/subscribe", subscribe.New(log, cfg, paymentTypesMap, subscriptionTypes, subscriptions))
 	// router.Post("/send", send.New(log, inputPath, client, cfg))
 
 	// Server

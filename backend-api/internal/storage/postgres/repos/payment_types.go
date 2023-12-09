@@ -16,23 +16,33 @@ func NewPaymentTypeRepository(pg *postgres.PGStorage) *PaymentTypeRepository {
 	return &PaymentTypeRepository{pg: pg}
 }
 
-func (p *PaymentTypeRepository) GetID(name string) (int64, error) {
-	const fn = "postgres.repos.payment_types.GetID"
+func (pt *PaymentTypeRepository) GetTypesMap() (map[string]int64, error) {
+	const fn = "postgres.repos.order_statuses.GetStatusesMap"
 
-	stmt, err := p.pg.Db.Prepare("SELECT id FROM payment_types WHERE name = $1")
+	stmt, err := pt.pg.Db.Prepare("SELECT id, name FROM payment_types")
 	if err != nil {
-		return 0, fmt.Errorf("%s: prepare statement: %w", fn, err)
+		return nil, fmt.Errorf("%s: prepare statement: %w", fn, err)
 	}
 
-	var uid int64
-
-	err = stmt.QueryRow(name).Scan(&uid)
+	rows, err := stmt.Query()
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return 0, fmt.Errorf("%s: execute statement: %w", fn, storage.ErrSubscriptionTypeDoesNotExists)
+			return nil, fmt.Errorf("%s: execute statement: %w", fn, storage.ErrNoOrderStatuses)
 		}
-		return 0, fmt.Errorf("%s: execute statement: %w", fn, err)
+		return nil, fmt.Errorf("%s: execute statement: %w", fn, err)
+	}
+	defer rows.Close()
+
+	types := make(map[string]int64)
+
+	for rows.Next() {
+		status := storage.OrderStatus{}
+		err = rows.Scan(&status.Id, &status.Name)
+		if err != nil {
+			return nil, fmt.Errorf("%s: scanning rows: %w", fn, err)
+		}
+		types[status.Name] = status.Id
 	}
 
-	return uid, nil
+	return types, nil
 }

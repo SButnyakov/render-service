@@ -22,19 +22,11 @@ type SubscriptionTypeProvider interface {
 	GetID(string) (int64, error)
 }
 
-type PaymentCreator interface {
-	Create(storage.Payment) error
-}
-
-type PaymentTypeProvider interface {
-	GetID(string) (int64, error)
-}
-
 type Response struct {
 	resp.Response
 }
 
-func New(log *slog.Logger, cfg *config.Config, pCreator PaymentCreator, ptProvider PaymentTypeProvider,
+func New(log *slog.Logger, cfg *config.Config, paymentTypesMap map[string]int64,
 	stProvider SubscriptionTypeProvider, sProvider SubscriptionProvider) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fn := "handlers.subscribe.New"
@@ -46,10 +38,10 @@ func New(log *slog.Logger, cfg *config.Config, pCreator PaymentCreator, ptProvid
 
 		uid := r.Context().Value("uid").(int64)
 
-		pTypeId, err := ptProvider.GetID(cfg.Payments.SubPremiumMonth)
-		if err != nil {
+		pTypeId, ok := paymentTypesMap[cfg.Payments.SubPremiumMonth]
+		if !ok {
 			log.Error("invalid payment type")
-			responseError(w, r, resp.Error("invalid payment type"), http.StatusBadRequest)
+			responseError(w, r, resp.Error("no such payment type"), http.StatusBadRequest)
 			return
 		}
 
