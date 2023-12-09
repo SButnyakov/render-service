@@ -4,14 +4,12 @@ import (
 	"backend-api/internal/config"
 	"backend-api/internal/lib/api/tokenManager"
 	"backend-api/internal/lib/logger/sl"
-	"backend-api/internal/server/api/handlers/send"
 	"backend-api/internal/server/api/handlers/subscribe"
 	"backend-api/internal/server/middleware/auth"
 	"backend-api/internal/server/middleware/cors"
 	mwLogger "backend-api/internal/server/middleware/logger"
 	"backend-api/internal/storage/postgres"
 	"backend-api/internal/storage/postgres/repos"
-	"backend-api/internal/storage/redis"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/lib/pq"
@@ -25,7 +23,7 @@ func main() {
 	cfgPath := os.Getenv("API_CONFIG_PATH")
 	storagePath := os.Getenv("API_STORAGE_PATH")
 	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
-	inputPath := os.Getenv("BUFFER_INPUT_PATH")
+	// inputPath := os.Getenv("BUFFER_INPUT_PATH")
 
 	// Config
 	cfg := config.MustLoad(cfgPath)
@@ -53,12 +51,14 @@ func main() {
 	_ = orders
 
 	// Redis
-	client, err := redis.New(cfg.Redis.Address)
-	if err != nil {
-		log.Error("failed to initialize redis", sl.Err(err))
-		os.Exit(-1)
-	}
-	defer client.Close()
+	/*
+		client, err := redis.New(cfg.Redis.Address)
+		if err != nil {
+			log.Error("failed to initialize redis", sl.Err(err))
+			os.Exit(-1)
+		}
+		defer client.Close()
+	*/
 
 	// JWT manager
 	jwtManager, err := tokenManager.New(jwtSecretKey)
@@ -80,7 +80,7 @@ func main() {
 
 	// Router handlers
 	router.Post("/subscribe", subscribe.New(log, cfg, payments, paymentTypes, subscriptionTypes, subscriptions))
-	router.Post("/send", send.New(log, inputPath, client, cfg))
+	// router.Post("/send", send.New(log, inputPath, client, cfg))
 
 	// Server
 	server := http.Server{
