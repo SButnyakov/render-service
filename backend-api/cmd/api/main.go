@@ -4,6 +4,7 @@ import (
 	"backend-api/internal/config"
 	"backend-api/internal/lib/api/tokenManager"
 	"backend-api/internal/lib/logger/sl"
+	"backend-api/internal/server/api/handlers/send"
 	"backend-api/internal/server/api/handlers/subscribe"
 	"backend-api/internal/server/middleware/auth"
 	"backend-api/internal/server/middleware/cors"
@@ -79,7 +80,8 @@ func main() {
 
 	// Router handlers
 	router.Post("/subscribe", subscribe.New(log, cfg, payments, paymentTypes, subscriptionTypes, subscriptions))
-	
+	router.Post("/send", send.New(log, inputPath, client, cfg))
+
 	// Server
 	server := http.Server{
 		Addr:         cfg.HTTPServer.Address,
