@@ -6,6 +6,7 @@ services:
         ports:
         - 8080:8000
         - 8081:8001
+        - 8082:8002
         depends_on:
         - postgres
     frontend:
@@ -18,12 +19,12 @@ services:
         container_name: data_base_psql
         build: ./backend-api/schemas
         environment:
-          POSTGRES_DB: "cloud_render"
+          POSTGRES_DB: "cloud_render_api"
           POSTGRES_USER: "user"
           POSTGRES_PASSWORD: "password"
           PGDATA: "/var/lib/postgresql/data/pgdata"
         volumes:
-            #- ./backend-api/schemas/:/docker-entrypoint-initdb.d/
+            - ./backend-api/schemas/:/docker-entrypoint-initdb.d/
             - dbvolume:/var/lib/postgresql/data
         ports:
           - 5432:5432

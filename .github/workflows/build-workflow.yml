@@ -41,7 +41,7 @@ jobs:
         working-directory: ./frontend
         run: npm ci 1> /dev/null
         timeout-minutes: 10
-      - name: prepare script for mdification
+      - name: prepare script for modification
         run: chmod +x ./CI-change.sh
       - name: set CI to false and disable eslint to suppress warnings
         run: ./CI-change.sh
