@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./redis-server &
+#./redis-server --daemonize yes
 ./serverAPI &
 ./serverAuth 
-./serverBuff
+#./serverBuff
