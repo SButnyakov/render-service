@@ -18,16 +18,12 @@ type SubscriptionProvider interface {
 	Update(storage.Subscription, storage.Payment) error
 }
 
-type SubscriptionTypeProvider interface {
-	GetID(string) (int64, error)
-}
-
 type Response struct {
 	resp.Response
 }
 
-func New(log *slog.Logger, cfg *config.Config, paymentTypesMap map[string]int64,
-	stProvider SubscriptionTypeProvider, sProvider SubscriptionProvider) http.HandlerFunc {
+func New(log *slog.Logger, cfg *config.Config, paymentTypesMap, subscriptionTypesMap map[string]int64,
+	sProvider SubscriptionProvider) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fn := "handlers.subscribe.New"
 
@@ -45,10 +41,10 @@ func New(log *slog.Logger, cfg *config.Config, paymentTypesMap map[string]int64,
 			return
 		}
 
-		sTypeId, err := stProvider.GetID(cfg.Subscriptions.Premium)
-		if err != nil {
+		sTypeId, ok := subscriptionTypesMap[cfg.Subscriptions.Premium]
+		if !ok {
 			log.Error("invalid subscription type")
-			responseError(w, r, resp.Error("invalid subscription type"), http.StatusBadRequest)
+			responseError(w, r, resp.Error("no such subscription type"), http.StatusBadRequest)
 			return
 		}
 

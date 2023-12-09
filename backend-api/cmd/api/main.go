@@ -61,6 +61,11 @@ func main() {
 		log.Error("failed to get payment types", sl.Err(err))
 		os.Exit(-1)
 	}
+	subscriptionTypesMap, err := subscriptionTypes.GetTypesMap()
+	if err != nil {
+		log.Error("failed to get subscription types", sl.Err(err))
+		os.Exit(-1)
+	}
 	_ = orderStatusesMap
 
 	// Redis
@@ -92,7 +97,7 @@ func main() {
 	router.Use(auth.New(log, jwtManager))
 
 	// Router handlers
-	router.Post("/subscribe", subscribe.New(log, cfg, paymentTypesMap, subscriptionTypes, subscriptions))
+	router.Post("/subscribe", subscribe.New(log, cfg, paymentTypesMap, subscriptionTypesMap, subscriptions))
 	// router.Post("/send", send.New(log, inputPath, client, cfg))
 
 	// Server
