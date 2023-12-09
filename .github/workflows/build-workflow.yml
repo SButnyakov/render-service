@@ -47,7 +47,7 @@ jobs:
         run: ./CI-change.sh
       - name: building node.js
         working-directory: ./frontend
-        run: npm run build 1> /dev/null
+        run: npm run build
         timeout-minutes: 10
   docker-build:
     runs-on: self-hosted

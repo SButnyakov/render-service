@@ -12,7 +12,7 @@ COPY . .
 RUN go mod download && go mod verify
 RUN go mod tidy
 RUN go build -C ./cmd/api -o ./../serverAPI
-RUN go build -C ./cmd/api -o ./../serverAuth
+RUN go build -C ./cmd/auth -o ./../serverAuth
 RUN go build -C ./cmd/buffer -o ./../serverBuff
 WORKDIR /backend-api/cmd/
 CMD ["./serverAPI", "&&", "./serverAuth", "&&", "./serverBuff"]
