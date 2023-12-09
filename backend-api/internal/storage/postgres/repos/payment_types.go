@@ -17,7 +17,7 @@ func NewPaymentTypeRepository(pg *postgres.PGStorage) *PaymentTypeRepository {
 }
 
 func (pt *PaymentTypeRepository) GetTypesMap() (map[string]int64, error) {
-	const fn = "postgres.repos.order_statuses.GetStatusesMap"
+	const fn = "postgres.repos.payment_types.GetTypesMap"
 
 	stmt, err := pt.pg.Db.Prepare("SELECT id, name FROM payment_types")
 	if err != nil {
@@ -27,7 +27,7 @@ func (pt *PaymentTypeRepository) GetTypesMap() (map[string]int64, error) {
 	rows, err := stmt.Query()
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("%s: execute statement: %w", fn, storage.ErrNoOrderStatuses)
+			return nil, fmt.Errorf("%s: execute statement: %w", fn, storage.ErrNoPaymentTypes)
 		}
 		return nil, fmt.Errorf("%s: execute statement: %w", fn, err)
 	}
@@ -36,12 +36,12 @@ func (pt *PaymentTypeRepository) GetTypesMap() (map[string]int64, error) {
 	types := make(map[string]int64)
 
 	for rows.Next() {
-		status := storage.OrderStatus{}
-		err = rows.Scan(&status.Id, &status.Name)
+		pType := storage.OrderStatus{}
+		err = rows.Scan(&pType.Id, &pType.Name)
 		if err != nil {
 			return nil, fmt.Errorf("%s: scanning rows: %w", fn, err)
 		}
-		types[status.Name] = status.Id
+		types[pType.Name] = pType.Id
 	}
 
 	return types, nil
