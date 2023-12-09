@@ -23,7 +23,7 @@ import (
 func main() {
 	// Envs
 	cfgPath := os.Getenv("AUTH_CONFIG_PATH")
-	storagePath := os.Getenv("AUTH_STORAGE_PATH")
+	// storagePath := os.Getenv("AUTH_STORAGE_PATH")
 	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
 
 	// Config
@@ -36,7 +36,7 @@ func main() {
 	log.Debug("logger debug mode enabled")
 
 	// DB
-	pg, err := postgres.New(storagePath)
+	pg, err := postgres.New(cfg)
 	if err != nil {
 		log.Error("failed to initialize storage", sl.Err(err))
 		os.Exit(-1)

@@ -15,11 +15,10 @@ var (
 )
 
 type User struct {
-	Id            int64
-	Login         string
-	Email         string
-	Password      string
-	SubExpireDate time.Time
+	Id       int64
+	Login    string
+	Email    string
+	Password string
 }
 
 type Order struct {
@@ -54,5 +53,7 @@ type SubscriptionType struct {
 
 // TODO: subscribtion info
 type RedisData struct {
-	SavePath string
+	Format     string
+	Resolution string
+	SavePath   string
 }

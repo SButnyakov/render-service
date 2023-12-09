@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/lib/pq"
-	"time"
 )
 
 // TODO: dynamic package path
@@ -26,12 +25,12 @@ func NewUserRepository(pg *postgres.PGStorage) *UserRepository {
 func (u *UserRepository) Create(user storage.User) error {
 	const fn = PackagePath + "Create"
 
-	stmt, err := u.pg.Db.Prepare("INSERT INTO users(login, email, password, sub_expire_date) values($1, $2, $3, $4)")
+	stmt, err := u.pg.Db.Prepare("INSERT INTO users(login, email, password) values($1, $2, $3)")
 	if err != nil {
 		return fmt.Errorf("%s: prepare statement: %w", fn, err)
 	}
 
-	_, err = stmt.Exec(user.Login, user.Email, user.Password, time.Now().Add(-time.Hour*24))
+	_, err = stmt.Exec(user.Login, user.Email, user.Password)
 	if err != nil {
 		if postgresErr, ok := err.(*pq.Error); ok && postgresErr.Code == postgres.UniqueViolationErrorCode {
 			return fmt.Errorf("%s: %w", fn, storage.ErrUserExists)
