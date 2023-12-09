@@ -12,6 +12,7 @@ var (
 	ErrInvalidCredentials            = errors.New("invalid credentials")
 	ErrSubscriptionNotFound          = errors.New("subscription not found")
 	ErrSubscriptionTypeDoesNotExists = errors.New("subscription type does not exists")
+	ErrNoOrderStatuses               = errors.New("order statuses not found")
 )
 
 type User struct {
@@ -25,6 +26,11 @@ type Order struct {
 	Id       int64
 	FileName string
 	UserId   int64
+}
+
+type OrderStatus struct {
+	Id   int64
+	Name string
 }
 
 type Payment struct {

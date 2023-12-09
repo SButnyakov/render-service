@@ -43,12 +43,21 @@ func main() {
 	defer pg.Db.Close()
 
 	// Repos
+	orderStatuses := repos.NewOrderStatusesRepository(pg)
 	orders := repos.NewOrderRepository(pg)
 	paymentTypes := repos.NewPaymentTypeRepository(pg)
 	payments := repos.NewPaymentRepository(pg)
 	subscriptionTypes := repos.NewSubscriptionTypeRepository(pg)
 	subscriptions := repos.NewSubscriptionRepository(pg)
 	_ = orders
+
+	// Maps
+	orderStatusesMap, err := orderStatuses.GetStatusesMap()
+	if err != nil {
+		log.Error("failed to get order statuses", sl.Err(err))
+		os.Exit(-1)
+	}
+	_ = orderStatusesMap
 
 	// Redis
 	/*
