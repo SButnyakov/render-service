@@ -14,5 +14,14 @@ RUN go mod tidy
 RUN go build -C ./cmd/api -o ./../serverAPI
 RUN go build -C ./cmd/auth -o ./../serverAuth
 RUN go build -C ./cmd/buffer -o ./../serverBuff
+#RUN wget https://download.redis.io/redis-stable.tar.gz
+#RUN tar -xzvf redis-stable.tar.gz
+#WORKDIR /backend-api/redis-stable
+#RUN make
+#WORKDIR /backend-api/redis-stable/src
+#RUN cp ./redis-server /backend-api/cmd/
 WORKDIR /backend-api/cmd/
-CMD ["./serverAPI", "&&", "./serverAuth", "&&", "./serverBuff"]
+RUN chmod +x ./startAll.sh
+#, "&&", "./serverBuff", "&&", "./redis-server"]
+#CMD ["./serverAPI", "&&", "./serverAuth"]
+CMD ./startAll.sh
