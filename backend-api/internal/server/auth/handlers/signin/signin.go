@@ -67,6 +67,7 @@ func New(log *slog.Logger, userProvider UserProvider, m *tokenManager.Manager) h
 			return
 		}
 		if err != nil {
+			log.Error("server-side authorization fail", sl.Err(err))
 			responseError(w, r, resp.Error("server-side authorization failed"), http.StatusInternalServerError)
 			return
 		}

@@ -70,7 +70,7 @@ func New(log *slog.Logger, userCreator UserCreator) http.HandlerFunc {
 		}
 		if err != nil {
 			log.Error("failed to create new user", sl.Err(err))
-			responseError(w, r, resp.Error(err.Error()), http.StatusBadRequest)
+			responseError(w, r, resp.Error("server-size registration fail"), http.StatusBadRequest)
 			return
 		}
 
