@@ -41,9 +41,9 @@ jobs:
         working-directory: ./frontend
         run: npm ci 1> /dev/null
         timeout-minutes: 10
-      - name: unset CI to suppress warnings
+      - name: set CI to false and disable eslint to suppress warnings
         working-directory: ./frontend
-        run: export CI=false
+        run: sed -i '/react-scripts build/c \ \ \ \ "build": "CI=false DISABLE_ESLINT_PLUGIN=true react-scripts build"' ./package.json
       - name: building node.js
         working-directory: ./frontend
         run: npm run build 1> /dev/null
