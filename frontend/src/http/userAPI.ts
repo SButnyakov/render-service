@@ -1,9 +1,9 @@
-import { jwtDecode } from "jwt-decode";
-import { $authHost, $host } from ".";
+import { jwtDecode } from "jwt-decode"
+import { $authHost, $host } from "."
 
 export const registration = async (email: string, login: string, password: string) => {
-  const {data} = await $host.post('signup', {email, login, password})
-  return jwtDecode(data.access_token)
+  const {data} = await $host.post('signup', {"email": email, "login": login, "password": password})
+  return data
 }
 
 export const auth = async (login_or_email: string, password: string) => {
