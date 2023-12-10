@@ -9,3 +9,4 @@ CREATE TABLE IF NOT EXISTS users(
     password text NOT NULL,
     refresh_token text
 );
+

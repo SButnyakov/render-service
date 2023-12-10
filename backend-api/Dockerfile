@@ -6,6 +6,8 @@ ENV AUTH_CONFIG_PATH=/backend-api/config/localauth.yaml
 ENV API_STORAGE_PATH="user=user password=password dbname=cloud_render_api sslmode=disable"
 ENV AUTH_STORAGE_PATH="user=user password=password dbname=cloud_render_auth sslmode=disable"
 ENV BUFFER_CONFIG_PATH=/backend-api/config/localbuffer.yaml
+ENV FILES_INPUT_PATH=/backend-api/files/input
+ENV FILES_OUTPUT_PATH=/backend-api/files/output
 ENV JWT_SECRET_KEY=randomkekv123
 WORKDIR /backend-api
 COPY . .

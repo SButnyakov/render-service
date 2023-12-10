@@ -5,22 +5,29 @@ import (
 	resp "backend-api/internal/lib/api/response"
 	"backend-api/internal/lib/logger/sl"
 	"backend-api/internal/storage"
-	"context"
 	"encoding/json"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	"github.com/redis/go-redis/v9"
 	"io"
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
 )
 
 const (
 	PackagePath = "server.buffer.handlers.send."
 )
 
-func New(log *slog.Logger, inputPath string, redis *redis.Client, cfg *config.Config) http.HandlerFunc {
+type OrderProvider interface {
+	Create(storage.Order) error
+}
+
+func New(log *slog.Logger, inputPath string, cfg *config.Config, provider OrderProvider,
+	orderStatuses map[string]int64) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const fn = PackagePath + "New"
 
@@ -36,6 +43,9 @@ func New(log *slog.Logger, inputPath string, redis *redis.Client, cfg *config.Co
 			return
 		}
 
+		format := r.FormValue("format")
+		resolution := r.FormValue("resolution")
+
 		file, handler, err := r.FormFile("uploadfile")
 		if err != nil {
 			log.Error("failed to get file from form", sl.Err(err))
@@ -44,7 +54,18 @@ func New(log *slog.Logger, inputPath string, redis *redis.Client, cfg *config.Co
 		}
 		defer file.Close()
 
-		savePath := inputPath + handler.Filename
+		uid := r.Context().Value("uid").(int64)
+
+		userPath := filepath.Join(inputPath, strconv.FormatInt(uid, 10))
+		if err = os.MkdirAll(userPath, os.ModePerm); err != nil {
+			log.Error("failed to create user's dir", sl.Err(err))
+			responseError(w, r, resp.Error("failed to save file"), http.StatusInternalServerError)
+			return
+		}
+
+		storingName := strconv.FormatInt(time.Now().Unix(), 10) + "." + strings.Split(handler.Filename, ".")[1]
+
+		savePath := userPath + "/" + storingName
 
 		f, err := os.OpenFile(savePath, os.O_WRONLY|os.O_CREATE, 0666)
 		if err != nil {
@@ -58,20 +79,36 @@ func New(log *slog.Logger, inputPath string, redis *redis.Client, cfg *config.Co
 		if err != nil {
 			log.Error("failed to save file", sl.Err(err))
 			responseError(w, r, resp.Error("failed to save file"), http.StatusInternalServerError)
+			os.Remove(savePath)
 			return
 		}
 
-		newOrder := storage.RedisData{
-			SavePath: savePath,
-		}
-		b, err := json.Marshal(newOrder)
+		err = provider.Create(storage.Order{
+			FileName:     handler.Filename,
+			StoringName:  storingName,
+			CreationDate: time.Now(),
+			UserId:       uid,
+			StatusId:     orderStatuses["in queue"],
+		})
 		if err != nil {
-			log.Error("failed to save file", sl.Err(err))
+			log.Error("failed to create order record", sl.Err(err))
+			responseError(w, r, resp.Error("failed to create new order"), http.StatusInternalServerError)
+			os.Remove(savePath)
+			return
+		}
+
+		_, err = json.Marshal(storage.RedisData{
+			Format:     format,
+			Resolution: resolution,
+			SavePath:   savePath,
+		})
+		if err != nil {
+			log.Error("failed to marshal new order", sl.Err(err))
 			responseError(w, r, resp.Error("failed to save file"), http.StatusInternalServerError)
 			return
 		}
 
-		redis.RPush(context.Background(), cfg.Redis.QueueName, string(b))
+		// redis.RPush(context.Background(), cfg.Redis.QueueName, string(b))
 
 		w.WriteHeader(http.StatusOK)
 	}
