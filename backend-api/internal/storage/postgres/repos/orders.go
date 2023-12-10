@@ -29,3 +29,19 @@ func (o *OrderRepository) Create(order storage.Order) error {
 
 	return nil
 }
+
+func (o *OrderRepository) UpdateStatus(storingName string, uid, statusId int64) error {
+	const fn = "postgres.repos.orders.UpdateStatus"
+
+	stmt, err := o.pg.Db.Prepare("UPDATE orders SET status_id = $3 WHERE user_id = $1 AND storingname = $2")
+	if err != nil {
+		return fmt.Errorf("%s: prepare statement: %w", fn, err)
+	}
+
+	_, err = stmt.Exec(uid, storingName, statusId)
+	if err != nil {
+		return fmt.Errorf("%s: execute statement: %w", fn, err)
+	}
+
+	return nil
+}
