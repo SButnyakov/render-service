@@ -2,5 +2,5 @@
 
 #./redis-server --daemonize yes
 ./serverAPI &
-./serverAuth 
-#./serverBuff
+./serverAuth &
+./serverBuff
