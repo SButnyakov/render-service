@@ -5,6 +5,7 @@ import (
 	"backend-api/internal/lib/api/tokenManager"
 	"backend-api/internal/lib/logger/sl"
 	"backend-api/internal/server/buffer/handlers/blend"
+	"backend-api/internal/server/buffer/handlers/download"
 	"backend-api/internal/server/buffer/handlers/image"
 	"backend-api/internal/server/buffer/handlers/request"
 	"backend-api/internal/server/middleware/auth"
@@ -23,8 +24,10 @@ func main() {
 	// Envs
 	cfgPath := os.Getenv("BUFFER_CONFIG_PATH")
 	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
-	// inputPath := os.Getenv("FILES_INPUT_PATH")
-	// outputPath := os.Getenv("FILES_OUTPUT_PATH")
+	inputPath := os.Getenv("FILES_INPUT_PATH")
+	// inputPath := "E:\\projects\\render-service\\backend-api\\files\\input"
+	outputPath := os.Getenv("FILES_OUTPUT_PATH")
+	// outputPath := "E:\\projects\\render-service\\backend-api\\files\\output"
 
 	// Config
 	cfg := config.MustLoad(cfgPath)
@@ -55,7 +58,7 @@ func main() {
 	}
 
 	// Redis
-	client, err := redis.New(cfg.Redis.Address)
+	client, err := redis.New(cfg)
 	if err != nil {
 		log.Error("failed to initialize redis", sl.Err(err))
 		os.Exit(-1)
@@ -82,13 +85,15 @@ func main() {
 	mainRouter.Get("/request", request.New(log, client, cfg))
 	mainRouter.Route("/{uid}", func(uidRouter chi.Router) {
 		uidRouter.Route("/blend", func(blendRouter chi.Router) {
-			blendRouter.Get("/download/{filename}", blend.NewDownload(log))
+			blendRouter.Get("/download/{filename}", download.New(log, inputPath))
 			blendRouter.Put("/update/{filename}/{status}", blend.NewUpdate(log, orders, orderStatusesMap))
 		})
 		uidRouter.Route("/image", func(imageRouter chi.Router) {
-			imageRouter.Post("/upload", image.NewUpload(log))
-			imageRouter.Use(auth.New(log, jwtManager))
-			imageRouter.Post("/download/{filename}", image.NewDownload(log))
+			imageRouter.Post("/upload", image.NewUpload(log, inputPath, outputPath, orders, orderStatusesMap))
+			imageRouter.Route("/", func(authImageRouter chi.Router) {
+				authImageRouter.Use(auth.New(log, jwtManager))
+				authImageRouter.Get("/download/{filename}", download.New(log, outputPath))
+			})
 		})
 	})
 

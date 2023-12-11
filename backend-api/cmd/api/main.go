@@ -69,7 +69,7 @@ func main() {
 	_ = orderStatusesMap
 
 	// Redis
-	client, err := redis.New(cfg.Redis.Address)
+	client, err := redis.New(cfg)
 	if err != nil {
 		log.Error("failed to initialize redis", sl.Err(err))
 		os.Exit(-1)
@@ -96,7 +96,7 @@ func main() {
 
 	// Router handlers
 	router.Post("/subscribe", subscribe.New(log, cfg, paymentTypesMap, subscriptionTypesMap, subscriptions))
-	router.Post("/send", send.New(log, inputPath, cfg, orders, orderStatusesMap))
+	router.Post("/send", send.New(log, inputPath, cfg, orders, orderStatusesMap, client))
 
 	// Server
 	server := http.Server{

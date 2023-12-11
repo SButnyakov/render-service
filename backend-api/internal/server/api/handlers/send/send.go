@@ -5,9 +5,11 @@ import (
 	resp "backend-api/internal/lib/api/response"
 	"backend-api/internal/lib/logger/sl"
 	"backend-api/internal/storage"
+	"context"
 	"encoding/json"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
+	"github.com/redis/go-redis/v9"
 	"io"
 	"log/slog"
 	"net/http"
@@ -26,8 +28,12 @@ type OrderProvider interface {
 	Create(storage.Order) error
 }
 
+type Response struct {
+	resp.Response
+}
+
 func New(log *slog.Logger, inputPath string, cfg *config.Config, provider OrderProvider,
-	orderStatuses map[string]int64) http.HandlerFunc {
+	orderStatuses map[string]int64, redis *redis.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const fn = PackagePath + "New"
 
@@ -97,7 +103,7 @@ func New(log *slog.Logger, inputPath string, cfg *config.Config, provider OrderP
 			return
 		}
 
-		_, err = json.Marshal(storage.RedisData{
+		b, err := json.Marshal(storage.RedisData{
 			Format:     format,
 			Resolution: resolution,
 			SavePath:   savePath,
@@ -108,9 +114,9 @@ func New(log *slog.Logger, inputPath string, cfg *config.Config, provider OrderP
 			return
 		}
 
-		// redis.RPush(context.Background(), cfg.Redis.QueueName, string(b))
+		redis.RPush(context.Background(), cfg.Redis.QueueName, string(b))
 
-		w.WriteHeader(http.StatusOK)
+		responseOK(w, r)
 	}
 }
 
@@ -121,4 +127,7 @@ func responseError(w http.ResponseWriter, r *http.Request, response resp.Respons
 
 func responseOK(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
+	render.JSON(w, r, Response{
+		Response: resp.OK(),
+	})
 }

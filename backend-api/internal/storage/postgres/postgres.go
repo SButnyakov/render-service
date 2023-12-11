@@ -4,6 +4,7 @@ import (
 	"backend-api/internal/config"
 	"database/sql"
 	"fmt"
+	_ "github.com/lib/pq"
 )
 
 const (

@@ -34,7 +34,7 @@ type Redis struct {
 	Address           string `yaml:"address" env-default:"localhost:6379"`
 	QueueName         string `yaml:"queue_name" env-default:"render-list"`
 	PriorityQueueName string `yaml:"priority_queue_name" env-default:"render-list"`
-	MaxPriorityInARow int    `yaml:"max_priority_in_a_row" env-default:"5"`
+	Password          string `yaml:"password" env-default:"password"`
 }
 
 type Payments struct {

@@ -23,7 +23,6 @@ import (
 func main() {
 	// Envs
 	cfgPath := os.Getenv("AUTH_CONFIG_PATH")
-	// storagePath := os.Getenv("AUTH_STORAGE_PATH")
 	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
 
 	// Config
@@ -68,9 +67,10 @@ func main() {
 	router.Post("/signin", signin.New(log, users, jwtManager))
 	router.Put("/refresh", refresh.New(log, users, jwtManager))
 
-	router.Group(func(r chi.Router) {
-		r.Use(auth.New(log, jwtManager))
-		r.Put("/user/edit", edit.New(log, users))
+	router.Route("/user", func(userRouter chi.Router) {
+		userRouter.Use(auth.New(log, jwtManager))
+		// userRouter.Get("/", user.New)
+		userRouter.Put("/user/edit", edit.New(log, users))
 	})
 
 	// Server

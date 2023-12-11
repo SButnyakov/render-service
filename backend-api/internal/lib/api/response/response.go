@@ -8,6 +8,7 @@ import (
 
 const (
 	StatusOK    = "OK"
+	StatusEmpty = "Empty"
 	StatusError = "Error"
 )
 
@@ -19,6 +20,12 @@ type Response struct {
 func OK() Response {
 	return Response{
 		Status: StatusOK,
+	}
+}
+
+func Empty() Response {
+	return Response{
+		Status: StatusEmpty,
 	}
 }
 
