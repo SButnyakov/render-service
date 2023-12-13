@@ -27,11 +27,6 @@ jobs:
         working-directory: ./backend-api
         run: go build -C ./cmd/buffer -o ./../serverBuff 1> /dev/null
         timeout-minutes: 5
-      - name: build render app
-        if: always()
-        working-directory: ./render-app
-        run: go build -o ./renderApp
-        timeout-minutes: 2
   node_js-build:
     runs-on: self-hosted
     steps:
@@ -58,3 +53,4 @@ jobs:
       - name: building docker containers
         run: docker-compose build
         timeout-minutes: 30
+  
