@@ -3,16 +3,17 @@ package blend
 import (
 	resp "backend-api/internal/lib/api/response"
 	"backend-api/internal/lib/logger/sl"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 const (
-	packagePath = "server.buffer.handlers.blend.update."
+	PackagePath = "server.buffer.handlers.blend.update."
 )
 
 type OrderStatusUpdater interface {
@@ -25,7 +26,7 @@ type Response struct {
 
 func NewUpdate(log *slog.Logger, updater OrderStatusUpdater, orderStatusesMap map[string]int64) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const fn = packagePath + "NewUpdate"
+		const fn = PackagePath + "NewUpdate"
 
 		log = log.With(
 			slog.String("fn", fn),

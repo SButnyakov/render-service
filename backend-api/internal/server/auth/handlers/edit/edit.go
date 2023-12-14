@@ -5,16 +5,17 @@ import (
 	"backend-api/internal/lib/logger/sl"
 	"backend-api/internal/storage"
 	"errors"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/render"
-	"github.com/go-playground/validator/v10"
 	"io"
 	"log/slog"
 	"net/http"
+
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/render"
+	"github.com/go-playground/validator/v10"
 )
 
 const (
-	packagePath = "server.auth.handlers.edit."
+	PackagePath = "server.auth.handlers.edit."
 )
 
 type Request struct {
@@ -33,7 +34,7 @@ type UserUpdater interface {
 
 func New(log *slog.Logger, updater UserUpdater) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const fn = packagePath + "New"
+		const fn = PackagePath + "New"
 
 		log = log.With(
 			slog.String("fn", fn),

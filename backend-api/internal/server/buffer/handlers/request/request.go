@@ -9,17 +9,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/render"
-	"github.com/redis/go-redis/v9"
 	"log/slog"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/render"
+	"github.com/redis/go-redis/v9"
 )
 
 const (
-	packagePath = "server.buffer.handler.request."
+	PackagePath = "server.buffer.handler.request."
 )
 
 type Response struct {
@@ -31,7 +32,7 @@ type Response struct {
 
 func New(log *slog.Logger, client *redis.Client, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const fn = packagePath + "New"
+		const fn = PackagePath + "New"
 
 		log = log.With(
 			slog.String("fn", fn),

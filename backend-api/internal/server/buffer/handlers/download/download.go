@@ -2,8 +2,6 @@ package download
 
 import (
 	"backend-api/internal/lib/logger/sl"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"io"
 	"log/slog"
 	"net/http"
@@ -11,15 +9,18 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 const (
-	packagePath = "server.buffer.handlers.download."
+	PackagePath = "server.buffer.handlers.download."
 )
 
 func New(log *slog.Logger, downloadPath string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const fn = packagePath + "NewDownload"
+		const fn = PackagePath + "NewDownload"
 
 		log = log.With(
 			slog.String("fn", fn),

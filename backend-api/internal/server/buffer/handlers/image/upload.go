@@ -3,8 +3,6 @@ package image
 import (
 	"backend-api/internal/lib/logger/sl"
 	"fmt"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"io"
 	"log/slog"
 	"net/http"
@@ -12,10 +10,13 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 const (
-	packagePath = "server.buffer.handlers.image.upload."
+	PackagePath = "server.buffer.handlers.image.upload."
 )
 
 type OrdersProvider interface {
@@ -26,7 +27,7 @@ type OrdersProvider interface {
 func NewUpload(log *slog.Logger, inputPath, outputPath string, provider OrdersProvider,
 	orderStatusesMap map[string]int64) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const fn = packagePath + "NewUpload"
+		const fn = PackagePath + "NewUpload"
 
 		log = log.With(
 			slog.String("fn", fn),

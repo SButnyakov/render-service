@@ -12,12 +12,13 @@ import (
 	"backend-api/internal/storage/postgres"
 	"backend-api/internal/storage/postgres/repos"
 	"backend-api/internal/storage/redis"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	_ "github.com/lib/pq"
 	"log/slog"
 	"net/http"
 	"os"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -66,7 +67,6 @@ func main() {
 		log.Error("failed to get subscription types", sl.Err(err))
 		os.Exit(-1)
 	}
-	_ = orderStatusesMap
 
 	// Redis
 	client, err := redis.New(cfg)

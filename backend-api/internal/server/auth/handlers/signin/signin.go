@@ -6,12 +6,17 @@ import (
 	"backend-api/internal/lib/logger/sl"
 	"backend-api/internal/storage"
 	"errors"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/render"
-	"github.com/go-playground/validator/v10"
 	"io"
 	"log/slog"
 	"net/http"
+
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/render"
+	"github.com/go-playground/validator/v10"
+)
+
+const (
+	PackagePath = "server.handlers.signin."
 )
 
 type Request struct {
@@ -32,7 +37,7 @@ type UserProvider interface {
 
 func New(log *slog.Logger, userProvider UserProvider, m *tokenManager.Manager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const fn = "handlers.signin.New"
+		const fn = PackagePath + "New"
 
 		log = log.With(
 			slog.String("fn", fn),

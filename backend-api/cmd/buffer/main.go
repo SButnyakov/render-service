@@ -25,9 +25,7 @@ func main() {
 	cfgPath := os.Getenv("BUFFER_CONFIG_PATH")
 	jwtSecretKey := os.Getenv("JWT_SECRET_KEY")
 	inputPath := os.Getenv("FILES_INPUT_PATH")
-	// inputPath := "E:\\projects\\render-service\\backend-api\\files\\input"
 	outputPath := os.Getenv("FILES_OUTPUT_PATH")
-	// outputPath := "E:\\projects\\render-service\\backend-api\\files\\output"
 
 	// Config
 	cfg := config.MustLoad(cfgPath)
@@ -112,40 +110,3 @@ func main() {
 		os.Exit(-1)
 	}
 }
-
-/*
-f := func() {
-		priorityInARowCounter := 0
-		for {
-			var data []string
-			if priorityInARowCounter < cfg.Redis.MaxPriorityInARow {
-				fmt.Print("checking priority... ")
-				data, err = client.BLPop(context.Background(), 2*time.Second, cfg.Redis.PriorityQueueName).Result()
-				priorityInARowCounter++
-			} else {
-				fmt.Print("checking usual... ")
-				data, err = client.BLPop(context.Background(), 2*time.Second, cfg.Redis.QueueName).Result()
-				priorityInARowCounter = 0
-			}
-
-			if err != nil {
-				if errors.Is(err, redis.Nil) {
-					fmt.Println("nothing")
-					continue
-				}
-				log.Error("reading redis fail", sl.Err(err))
-			}
-
-			var newOrder storage.RedisData
-
-			b := []byte(data[1])
-			err = json.Unmarshal(b, &newOrder)
-			if err != nil {
-				log.Error("failed to unmarshal new order", sl.Err(err))
-			}
-			fmt.Println(newOrder)
-		}
-	}
-
-	go f()
-*/

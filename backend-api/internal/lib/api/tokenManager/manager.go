@@ -2,9 +2,14 @@ package tokenManager
 
 import (
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"strconv"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
+)
+
+const (
+	PackagePath = "internal.lib.api.tokenManager."
 )
 
 var (
@@ -16,7 +21,7 @@ type Manager struct {
 }
 
 func New(signingKey string) (*Manager, error) {
-	fn := "lib.api.tokenManager.New"
+	fn := PackagePath + "New"
 
 	if signingKey == "" {
 		return nil, fmt.Errorf("%s: empty signing key", fn)
@@ -54,7 +59,7 @@ func (m *Manager) Parse(token string) (*jwt.StandardClaims, error) {
 
 	jwtToken, err := jwt.ParseWithClaims(token, &jwt.StandardClaims{}, keyFunc)
 	if err != nil {
-		return nil, err
+		return nil, ErrInvalidToken
 	}
 
 	claims, ok := jwtToken.Claims.(*jwt.StandardClaims)

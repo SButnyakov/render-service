@@ -6,13 +6,14 @@ import (
 	"backend-api/internal/lib/logger/sl"
 	"backend-api/internal/storage"
 	"errors"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/render"
-	"github.com/go-playground/validator/v10"
 	"io"
 	"log/slog"
 	"net/http"
 	"strconv"
+
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/render"
+	"github.com/go-playground/validator/v10"
 )
 
 const (
@@ -118,7 +119,7 @@ func New(log *slog.Logger, provider TokenProvider, m *tokenManager.Manager) http
 
 		err = provider.UpdateRefreshToken(uid, refreshToken)
 		if err != nil {
-			log.Error("failed to update refresh token")
+			log.Error("failed to update refresh token", sl.Err(err))
 			responseError(w, r, resp.Error("failed to update refresh token"), http.StatusInternalServerError)
 			return
 		}
