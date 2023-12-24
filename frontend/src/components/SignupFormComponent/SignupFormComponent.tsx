@@ -1,37 +1,63 @@
 import React, { FormEvent, useState } from "react"
-import { auth, registration } from "../../http/userAPI"
+import { registration } from "../../http/AuthAPI"
 import { observer } from "mobx-react-lite"
+import { useNavigate } from "react-router-dom"
+import { AxiosError } from "axios"
+
+import styles from './SignupFormComponent.module.css'
+import { useForm } from "react-hook-form"
+
+type FormData = {
+  login: string;
+  email: string;
+  password: string;
+  passwordRepeat: string;
+};
+
+/* TODO: Доделать валидацию*/
 
 export const SignupForm = observer(() => {
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<FormData>();
+
   const [login, setLogin] = useState('')
   const [password, setPassword] = useState('')
   const [email, setEmail] = useState('')
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault()
+  const route = useNavigate()
+
+  const onSubmit = (_: any) => {
     signUp()
   }
 
   const signUp = async () => {
-    try {
-      const userData = await registration(email, login, password)
-      console.log(userData)
-    }
-    catch (e: any) {
-      console.error(e.message)
-    }
+    await registration(email, login, password)
+      .then(_ => {
+        route('/signin')
+      })
+      .catch((error: AxiosError) => {
+
+      })
   }
 
   return(
     <div >
-      <form onSubmit={handleSubmit}>
-        <div>
+      <form onSubmit={handleSubmit(onSubmit)}>
+      <div>
           <label htmlFor="login">Login:</label>
           <input 
-            name="login" 
-            type="text" 
-            value={login} 
-            onChange={e => {setLogin(e.target.value)}}
+            id="login"
+            {...register('login', {
+              required: 'Enter login',
+              pattern: {
+                value: /^[a-zA-Z\d]{4,15}$/,
+                message: 'Логин должен состоять из 4-15 символов (латинские буквы и цифры)',
+              }
+            })}
           />
         </div>
 
@@ -54,7 +80,17 @@ export const SignupForm = observer(() => {
             onChange={e => {setPassword(e.target.value)}}
           />
         </div>
+
+        <div className={styles.errorBlockMessage}>
+          {errors.login && (
+            <p>{errors.login.message}</p>
+          )}
+
+        </div>
+        
+
         <button>Register</button>
+        <button onClick={() => {route('/signin')}}>Log In</button>
       </form>
     </div>
   )
